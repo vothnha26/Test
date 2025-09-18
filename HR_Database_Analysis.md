@@ -195,14 +195,68 @@ Cơ sở dữ liệu `QuanLyNhanSu` được thiết kế khá hoàn chỉnh v�
 6. **Hệ thống phân quyền** cơ bản nhưng đầy đủ
 7. **Transaction handling** trong các stored procedures quan trọng
 
+---
+
+## 7. TRIGGERS TỰ ĐỘNG HÓA
+
+### ✅ **ĐÃ CÓ - Rất tốt**
+
+#### **TRG_CapNhatTrangThaiTaiKhoan**
+- **Mục đích**: Tự động vô hiệu hóa tài khoản khi nhân sự nghỉ việc
+- **Trigger**: AFTER UPDATE trên bảng NhanSu
+- **Logic**: Khi TrangThai = 'Đã nghỉ việc' → tự động set TrangThai tài khoản = 'Vô hiệu hóa'
+- **Tính năng**: Đảm bảo bảo mật, ngăn nhân viên đã nghỉ truy cập hệ thống
+
+#### **TRG_CapNhatSoNgayPhepKhiThemNhanSu**
+- **Mục đích**: Tự động cấp 12 ngày phép cho nhân sự mới
+- **Trigger**: AFTER INSERT trên bảng NhanSu
+- **Logic**: Tự động tạo bản ghi SoNgayPhep với 12 ngày phép cho năm hiện tại
+- **Tính năng**: Đảm bảo mọi nhân sự mới đều có ngày phép
+
+#### **TRG_CapNhatSoNgayDaNghi**
+- **Mục đích**: Tự động trừ ngày phép khi đơn nghỉ được duyệt
+- **Trigger**: AFTER UPDATE trên bảng DonNghiPhep
+- **Logic**: Khi TrangThai chuyển sang 'Đã duyệt' → tự động trừ số ngày nghỉ từ SoNgayConLai
+- **Tính năng**: Tự động quản lý số ngày phép còn lại
+
+#### **TRG_CapNhatTrangThai_NhanSu**
+- **Mục đích**: Tự động cập nhật trạng thái nhân sự khi xóa hợp đồng cuối cùng
+- **Trigger**: AFTER DELETE trên bảng HopDong
+- **Logic**: Nếu không còn hợp đồng nào → tự động set TrangThai = 'Đã nghỉ việc'
+- **Tính năng**: Đảm bảo tính nhất quán dữ liệu
+
+#### **TRG_KiemTraNgayLamViec_ChamCong**
+- **Mục đích**: Kiểm tra tính hợp lệ khi chấm công
+- **Trigger**: INSTEAD OF INSERT trên bảng ChamCong
+- **Logic**: 
+  - Không cho chấm công vào cuối tuần (thứ 7, chủ nhật)
+  - Không cho chấm công vào ngày nghỉ phép đã được duyệt
+- **Tính năng**: Đảm bảo tính chính xác của dữ liệu chấm công
+
+### 🎯 **ĐÁNH GIÁ TRIGGERS:**
+
+#### **Điểm mạnh:**
+1. **Tự động hóa hoàn chỉnh** - Các quy trình nghiệp vụ được tự động hóa
+2. **Kiểm tra tính hợp lệ** - Ngăn chặn dữ liệu không hợp lệ
+3. **Đảm bảo tính nhất quán** - Dữ liệu luôn đồng bộ
+4. **Bảo mật** - Tự động vô hiệu hóa tài khoản khi cần
+5. **Business Logic** - Implement đúng quy trình nghiệp vụ
+
+#### **Cải tiến có thể:**
+1. **Thêm logging** - Ghi log khi trigger thực thi
+2. **Error handling** - Xử lý lỗi chi tiết hơn
+3. **Performance** - Tối ưu cho bulk operations
+
+---
+
 ### ⚠️ **ĐIỂM CẦN CẢI THIỆN:**
-1. **Thiếu Triggers** - Không có trigger tự động cập nhật
+1. ~~**Thiếu Triggers**~~ ✅ **ĐÃ CÓ** - 5 triggers rất tốt
 2. **Thiếu Index** - Chưa thấy index tối ưu hiệu suất
 3. **Thiếu Audit Trail** - Không có bảng lưu lịch sử thay đổi
 4. **Thiếu Constraints** - Một số ràng buộc business logic chưa được implement
 5. **Thiếu Backup/Restore procedures**
 
 ### 📊 **KẾT LUẬN:**
-Database này **ĐÁP ỨNG ĐẦY ĐỦ** các yêu cầu chức năng cơ bản của hệ thống quản lý nhân sự. Đặc biệt mạnh về tính lương tự động và báo cáo. Có thể sử dụng ngay cho môi trường production với một số cải tiến nhỏ về performance và audit.
+Database này **ĐÁP ỨNG ĐẦY ĐỦ** các yêu cầu chức năng cơ bản của hệ thống quản lý nhân sự. Đặc biệt mạnh về tính lương tự động, báo cáo và **tự động hóa nghiệp vụ**. Có thể sử dụng ngay cho môi trường production với một số cải tiến nhỏ về performance và audit.
 
-**Điểm số: 8.5/10** - Rất tốt cho hệ thống quản lý nhân sự cơ bản đến trung bình.
+**Điểm số: 9.0/10** - Xuất sắc cho hệ thống quản lý nhân sự cơ bản đến trung bình.
